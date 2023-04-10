@@ -1,7 +1,10 @@
 const serverless = require('serverless-http');
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const { db } = require('../app');
+
+app.use(cors());
 
 // Fetch complete all products details
 app.get('/api/products/', (req, res) => {
