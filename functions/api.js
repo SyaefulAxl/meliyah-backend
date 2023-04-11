@@ -2,12 +2,12 @@ const serverless = require('serverless-http');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const { db } = require('../app');
+const db = require('../db');
 
 app.use(cors());
 
 // Fetch complete all products details
-app.get('/api/products/', (req, res) => {
+app.get('/products/', (req, res) => {
   const query = `
     SELECT p.product_id, g.name, g.price, g.unit, p.quantity, t.type_id, c.category_id, t.type_name, c.category_name, p.expiry_date, g.group_id
     FROM products p
@@ -22,7 +22,7 @@ app.get('/api/products/', (req, res) => {
 });
 
 // Fetch complete product details
-app.get('/api/products/:id', (req, res) => {
+app.get('/products/:id', (req, res) => {
   const id = req.params.id;
   const query = `
   SELECT p.product_id, g.name, g.price, g.unit, p.quantity, t.type_id, c.category_id, t.type_name, c.category_name, p.expiry_date, g.group_id
@@ -39,7 +39,7 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Fetch all categories
-app.get('/api/categories', (req, res) => {
+app.get('/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
   db.execute(query, (err, result) => {
     if (err) throw err;
@@ -48,7 +48,7 @@ app.get('/api/categories', (req, res) => {
 });
 
 // Fetch types by category_id
-app.get('/api/types', (req, res) => {
+app.get('/types', (req, res) => {
   const categoryId = req.query.category_id;
   let query = 'SELECT * FROM types';
 
@@ -67,7 +67,7 @@ app.get('/api/types', (req, res) => {
 });
 
 // Insert a new product
-app.post('/api/products', (req, res) => {
+app.post('/products', (req, res) => {
   const {
     name,
     price,
@@ -187,7 +187,7 @@ app.post('/api/products', (req, res) => {
 });
 
 // Update product details
-app.put('/api/products/:id', (req, res) => {
+app.put('/products/:id', (req, res) => {
   const id = req.params.id;
   const {
     name,
@@ -271,7 +271,7 @@ app.put('/api/products/:id', (req, res) => {
 });
 
 // Delete a product
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/products/:id', (req, res) => {
   const id = req.params.id;
   const query = `DELETE FROM products WHERE product_id = ?;
   DELETE FROM product_groups WHERE group_id =
@@ -285,4 +285,5 @@ app.delete('/api/products/:id', (req, res) => {
 });
 
 // Export the Express app as a serverless function
-module.exports.handler = serverless(app);
+// module.exports.handler = serverless(app);
+module.exports = app;
