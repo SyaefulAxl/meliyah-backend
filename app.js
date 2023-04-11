@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const apiRoutes = require('./functions/api');
+const apiRoutes = require('./functions/api').handler;
 app.use('/api', apiRoutes);
 
 const port = process.env.PORT || 5000;

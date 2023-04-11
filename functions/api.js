@@ -285,5 +285,5 @@ app.delete('/products/:id', (req, res) => {
 });
 
 // Export the Express app as a serverless function
-// module.exports.handler = serverless(app);
-module.exports = app;
+module.exports.handler = serverless(app);
+//module.exports = app;
