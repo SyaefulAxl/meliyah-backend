@@ -5,6 +5,7 @@ const cors = require('cors');
 const db = require('./db');
 
 app.use(cors());
+app.use(express.json());
 
 // Fetch complete all products details
 app.get('/products/', (req, res) => {
@@ -16,7 +17,10 @@ app.get('/products/', (req, res) => {
     JOIN categories c ON g.category_id = c.category_id
   `;
   db.execute(query, (err, result) => {
-    if (err) throw err;
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(result);
   });
 });
@@ -32,8 +36,11 @@ app.get('/products/:id', (req, res) => {
     JOIN categories c ON g.category_id = c.category_id
     WHERE p.product_id = ?;
   `;
-  db.execute(query, [id], (err, result) => {
-    if (err) throw err;
+  db.execute(query, (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(result);
   });
 });
@@ -42,7 +49,10 @@ app.get('/products/:id', (req, res) => {
 app.get('/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
   db.execute(query, (err, result) => {
-    if (err) throw err;
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(result);
   });
 });
@@ -60,7 +70,10 @@ app.get('/types', (req, res) => {
     });
   } else {
     db.execute(query, (err, result) => {
-      if (err) throw err;
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+      }
       res.json(result);
     });
   }
@@ -278,9 +291,12 @@ app.delete('/products/:id', (req, res) => {
   ( SELECT group_id FROM products WHERE product_id = ? );
   `;
 
-  db.execute(query, [id, id], (err, result) => {
-    if (err) throw err;
-    res.json({ success: true });
+  db.execute(query, (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
   });
 });
 
