@@ -2,7 +2,7 @@ const serverless = require('serverless-http');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const db = require('../db');
+const db = require('./db');
 
 app.use(cors());
 
