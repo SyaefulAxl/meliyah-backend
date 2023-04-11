@@ -1,9 +1,9 @@
 [build]
   command = "npm run build"
   functions = "functions"
+  publish = "public"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  from = "/*"
+  to = "/.netlify/functions/api"
   status = 200
-  force = true

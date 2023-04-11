@@ -1,14 +1,36 @@
 const serverless = require('serverless-http');
 const express = require('express');
-const app = express();
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-const db = require('./db');
+require('dotenv').config();
+const app = express();
+
+app.use(bodyParser.json());
+app.use(cors());
+// Replace with your MySQL database credentials
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  multipleStatements: true, // Add this line
+});
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to the MySQL database.');
+});
+
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 
 app.use(cors());
-app.use(express.json());
 
 // Fetch complete all products details
-app.get('/products/', (req, res) => {
+app.get('/api/products/', (req, res) => {
   const query = `
     SELECT p.product_id, g.name, g.price, g.unit, p.quantity, t.type_id, c.category_id, t.type_name, c.category_name, p.expiry_date, g.group_id
     FROM products p
@@ -17,16 +39,13 @@ app.get('/products/', (req, res) => {
     JOIN categories c ON g.category_id = c.category_id
   `;
   db.execute(query, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) throw err;
     res.json(result);
   });
 });
 
 // Fetch complete product details
-app.get('/products/:id', (req, res) => {
+app.get('/api/products/:id', (req, res) => {
   const id = req.params.id;
   const query = `
   SELECT p.product_id, g.name, g.price, g.unit, p.quantity, t.type_id, c.category_id, t.type_name, c.category_name, p.expiry_date, g.group_id
@@ -36,29 +55,23 @@ app.get('/products/:id', (req, res) => {
     JOIN categories c ON g.category_id = c.category_id
     WHERE p.product_id = ?;
   `;
-  db.execute(query, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
-    }
+  db.execute(query, [id], (err, result) => {
+    if (err) throw err;
     res.json(result);
   });
 });
 
 // Fetch all categories
-app.get('/categories', (req, res) => {
+app.get('/api/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
   db.execute(query, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) throw err;
     res.json(result);
   });
 });
 
 // Fetch types by category_id
-app.get('/types', (req, res) => {
+app.get('/api/types', (req, res) => {
   const categoryId = req.query.category_id;
   let query = 'SELECT * FROM types';
 
@@ -70,17 +83,14 @@ app.get('/types', (req, res) => {
     });
   } else {
     db.execute(query, (err, result) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: err.message });
-      }
+      if (err) throw err;
       res.json(result);
     });
   }
 });
 
 // Insert a new product
-app.post('/products', (req, res) => {
+app.post('/api/products', (req, res) => {
   const {
     name,
     price,
@@ -200,7 +210,7 @@ app.post('/products', (req, res) => {
 });
 
 // Update product details
-app.put('/products/:id', (req, res) => {
+app.put('/api/products/:id', (req, res) => {
   const id = req.params.id;
   const {
     name,
@@ -284,22 +294,18 @@ app.put('/products/:id', (req, res) => {
 });
 
 // Delete a product
-app.delete('/products/:id', (req, res) => {
+app.delete('/api/products/:id', (req, res) => {
   const id = req.params.id;
   const query = `DELETE FROM products WHERE product_id = ?;
   DELETE FROM product_groups WHERE group_id =
   ( SELECT group_id FROM products WHERE product_id = ? );
   `;
 
-  db.execute(query, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
+  db.execute(query, [id, id], (err, result) => {
+    if (err) throw err;
+    res.json({ success: true });
   });
 });
 
 // Export the Express app as a serverless function
 module.exports.handler = serverless(app);
-//module.exports = app;
